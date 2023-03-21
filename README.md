@@ -24,10 +24,18 @@ nodemon server
 DIVERS PACKAGES :
 
 
+Package pour les variables environments : 
+
+npm install dotenv
+
 Package pour la base de données : 
 
 npm install mongoose
 
-Package pour les variables environments : 
+Package pour la vérification d'uniques : 
 
-npm install dotenv
+npm install mongoose-unique-validator || npm install --save mongoose-unique-validator
+
+Package pour l'encryptage de données : 
+
+npm install bcrypt || npm install --save bcrypt

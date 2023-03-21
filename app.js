@@ -2,6 +2,10 @@ const express = require('express')
 const app = express();
 const mongoose = require('mongoose')
 require('dotenv').config();
+const oneRoutes = require('./routes/One')
+const userRoutes = require('./routes/userRoutes')
+
+
 
 mongoose.connect(`mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@cluster.3zqn6vj.mongodb.net/?retryWrites=true&w=majority`,
   { useNewUrlParser: true,
@@ -16,14 +20,12 @@ app.use((req,res,next) => {
     next();
 })
 
-/* méthode http : app.get app.post etc */
-app.use((req,res,next) => {
-    res.status(201);
+app.use((req,res) => {
+    res.json(`Listening on port ${process.env.PORT}`);
     next();
 })
 
-app.use((req,res, next) => {
-    res.json( {message: 'votre requete a été reçu'} );
-})
+app.use('http:localhost:3000/api/qqch', oneRoutes);
+app.use('http:localhost:3000/api/auth', userRoutes)
 
 module.exports = app;
