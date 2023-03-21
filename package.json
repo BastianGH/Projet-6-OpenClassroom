@@ -1,0 +1,24 @@
+{
+  "name": "projet-6-openclassroom",
+  "version": "1.0.0",
+  "description": "PROJET 6 OPENCLASSROOM",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BastianGH/Projet-6-OpenClassroom.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BastianGH/Projet-6-OpenClassroom/issues"
+  },
+  "homepage": "https://github.com/BastianGH/Projet-6-OpenClassroom#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "mongoose": "^7.0.2"
+  }
+}
