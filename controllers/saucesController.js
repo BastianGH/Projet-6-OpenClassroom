@@ -1,10 +1,9 @@
 const Sauce = require('../models/saucesModel');
 
-
 exports.getSauces = (req,res, next) => {
     Sauce.find()
-    .then(one => res.status(200).json(one))
-    .catch(error => res.status(400).json({error}));
+    .then((sauce) => { req.status(200).json(sauce) })
+    .catch((error) => { res.status(400).json({error}) });
 };
 
 exports.getSauce = (req, res, next) => {
@@ -15,9 +14,11 @@ exports.getSauce = (req, res, next) => {
 
 exports.createSauce = (req, res, next) => {
     const sauceObject = JSON.parse(req.body.sauce);
+    console.log(sauceObject)
     delete sauceObject._id;
     delete sauceObject._userId;
 
+    console.log(sauceObject)
     const sauce = new Sauce({
       ...sauceObject,
       userId: req.auth._userId,
@@ -25,8 +26,8 @@ exports.createSauce = (req, res, next) => {
     });
 
     sauce.save()
-      .then(() => res.status(201).json({ message: 'Objet enregistré !'}))
-      .catch(error => res.status(400).json({ error }));
+      .then(() => { res.status(201).json({ message: 'Objet enregistré !'}) })
+      .catch((error) => { res.status(400).json({ error }) });
 };
 
 exports.modifySauce = (req, res, next) => {

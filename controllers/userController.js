@@ -2,12 +2,6 @@ const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-exports.getAll = (req, res, next) => {
-    User.find()
-    .then(user => res.status(201).json(user))
-    .catch(error => res.status(400).json({error}));
-};
-
 exports.signup = (req, res, next) => {
     User.findOne({email: req.body.email})
     .then(user => {

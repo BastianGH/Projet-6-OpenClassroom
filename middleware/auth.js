@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
         req.auth = {
             userId: userId
         };
-    }catch(err) {
-        res.status(401).json( {err} )
+    }catch(error) {
+        res.status(401).json( {error} )
     }
 };
