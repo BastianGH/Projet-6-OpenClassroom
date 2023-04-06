@@ -1,5 +1,6 @@
 const Sauce = require('../models/saucesModel');
 const fs = require('fs');
+const validations = require('../utils/validations')
 
 exports.getSauces = (req,res, next) => {
     Sauce.find()
@@ -8,15 +9,18 @@ exports.getSauces = (req,res, next) => {
 };
 
 exports.getSauce = (req, res, next) => {
-    Sauce.findOne({ _id: req.params.id })
+    Sauce.findOne({ _id: { $eq: req.params.id } })
       .then(sauce => res.status(200).json(sauce))
       .catch(error => res.status(404).json({ error }));
 }
 
-exports.createSauce = (req, res, next) => {
+exports.createSauce = async (req, res, next) => {
+  try {
     const sauceObject = JSON.parse(req.body.sauce);
     delete sauceObject._id;
     delete sauceObject.userId;
+
+    validations.validateSauce(sauceObject, req.file.filename);
 
     const sauce = new Sauce({
       ...sauceObject,
@@ -24,23 +28,46 @@ exports.createSauce = (req, res, next) => {
       imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     });
 
-    sauce.save()
-      .then(() => { res.status(201).json({ message: 'Objet enregistré !'}) })
-      .catch((error) => { res.status(400).json({ error }) });
+    const createdSauce = await sauce.save();
+
+    if (!createdSauce) {
+      throw new Error('Erreur lors de la création de la sauce');
+    }
+
+    res.status(201).json({ message: 'Objet enregistré !' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
 
 exports.modifySauce = (req, res, next) => {
-  const sauceObject = req.file ? {
-    ...JSON.parse(req.body.sauce),
-    imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-  } : { ...req.body };  
-  
-  delete sauceObject.userId;
-  Sauce.findOne({ _id: req.params.id })
-    .then((sauce) => {
-      if(req.file !== undefined) {
-        const filename = sauce.imageUrl.split('/images/')[1]
-        fs.unlink(`images/${filename}`, () => {
+  try {
+    const sauceObject = req.file ? {
+      ...JSON.parse(req.body.sauce),
+      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    } : { ...req.body };  
+    
+    if(req.file == undefined) {
+      validations.validateSauce(sauceObject );
+    }else {
+      validations.validateSauce(sauceObject, req.file.filename);
+    }
+    
+    delete sauceObject.userId;
+    Sauce.findOne({ _id: { $eq: req.params.id } })
+      .then((sauce) => {
+        if(req.file !== undefined) {
+          const filename = sauce.imageUrl.split('/images/')[1]
+          fs.unlink(`images/${filename}`, () => {
+            if(sauce.userId===req.auth.userId) {
+              Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
+                .then(() => res.status(200).json({ message: 'Objet modifié !'}))
+                .catch(error => res.status(400).json({ error }));
+            }else {
+              res.status(403).json({message: 'Unauthorized request'})
+            }
+          })
+        }else {
           if(sauce.userId===req.auth.userId) {
             Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
               .then(() => res.status(200).json({ message: 'Objet modifié !'}))
@@ -48,21 +75,15 @@ exports.modifySauce = (req, res, next) => {
           }else {
             res.status(403).json({message: 'Unauthorized request'})
           }
-        })
-      }else {
-        if(sauce.userId===req.auth.userId) {
-          Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
-            .then(() => res.status(200).json({ message: 'Objet modifié !'}))
-            .catch(error => res.status(400).json({ error }));
-        }else {
-          res.status(403).json({message: 'Unauthorized request'})
         }
-      }
-    })  
+      })  
+  }catch (error) {
+    res.status(400).json({error : error.message})
+  }
 };
 
 exports.deleteSauce = (req, res, next) => {
-  Sauce.findOne({ _id: req.params.id })
+  Sauce.findOne({ _id: { $eq: req.params.id } })
     .then((sauce) => {
       if(sauce.userId===req.auth.userId) {
         const filename = sauce.imageUrl.split('/images/')[1]
@@ -83,7 +104,7 @@ exports.likeSauce = (req, res, next) => {
   let cancelLike = false;
   let cancelDislike = false;
 
-  Sauce.findOne({ _id: req.params.id })
+  Sauce.findOne({ _id: { $eq: req.params.id } })
     .then((sauce) => {
       if (sauce.usersLiked.includes(req.auth.userId) || sauce.usersDisliked.includes(req.auth.userId)){
           authorization = false;
