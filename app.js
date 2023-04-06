@@ -9,11 +9,13 @@ const saucesRoutes = require('./routes/saucesRoutes');
 
 require('dotenv').config();
 
+mongoose.set('strictQuery', false);
+
 mongoose.connect(`mongodb+srv://${process.env.MDB_USER}:${process.env.MDB_PASSWORD}@cluster.3zqn6vj.mongodb.net/?retryWrites=true&w=majority`,
   { useNewUrlParser: true,
     useUnifiedTopology: true })
-  .then(() => console.log('Connexion à MongoDB réussie !'))
-  .catch(() => console.log('Connexion à MongoDB échouée !'));
+  .then(() => console.log('Connexion à la BDD réussie !'))
+  .catch(() => console.log('Connexion à la BDD échouée !'));
   
 app.use(express.json());
 app.use(cors()); 
